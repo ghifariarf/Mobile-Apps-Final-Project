@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "659927280588",
+    "firebase_url": "https://taabdulaziz-26807.firebaseio.com",
+    "project_id": "taabdulaziz-26807",
+    "storage_bucket": "taabdulaziz-26807.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:659927280588:android:037dff8fe6cf0e3fc30b69",
+        "android_client_info": {
+          "package_name": "com.example.tamapbox"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "659927280588-drkhhuhn6c8m7g8ki7q7svt2j2ie48su.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.tamapbox",
+            "certificate_hash": "3fa6918e712105c3bf4cf8ffa469cefb5a56ca4d"
+          }
+        },
+        {
+          "client_id": "659927280588-mpev4gb6mu8abgbifut9v7lme64ob5kn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMD_GNoES4y2bDq2CaLJsGOe74rE7CkB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "659927280588-mpev4gb6mu8abgbifut9v7lme64ob5kn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

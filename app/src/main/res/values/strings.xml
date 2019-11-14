@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">TA MapBox</string>
+    <string name="acces_token">pk.eyJ1IjoiYm95YXppeiIsImEiOiJjazA0MWkyNDQwOTNxM25rYXZqdjBnMmZvIn0.dSMBPD7RQkYDrASXo0TR8w</string>
+    <string name="access_token" />
+    <string name="click_instructions" />
+    <string name="successful_but_no_routes" />
+    <string name="null_in_response" />
+    <string name="only_twelve_stops_allowed" />
+    <string name="no_success" />
+
+</resources>
