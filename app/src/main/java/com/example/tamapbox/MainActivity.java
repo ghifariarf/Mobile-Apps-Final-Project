@@ -53,8 +53,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static java.lang.String.format;
-
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, LocationEngineListener,
         PermissionsListener, MapboxMap.OnMapClickListener {
@@ -77,17 +75,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final String LAYER_ID = "LAYER_ID";
     private Spinner locSpinner;
     private List<String> lokasi = new ArrayList<>();
-    private List<String> listJalur = new ArrayList<>();
-    private List<Integer> bobots = new ArrayList<>();
+    private List<String> lokasifb = new ArrayList<>();
     private List<Point> points = new ArrayList<>();
     private List<Object> datapoint = new ArrayList<>();
-    private List<Jalur> jalurs = new ArrayList<>();
-    private List<City> cityAwal = new ArrayList<>();
-    private List<City> cityAkhir = new ArrayList<>();
     private ArrayAdapter<String> dataadapter;
     private FirebaseFirestore db;
     private RequestQueue mQueue;
-    int indexTerpilih;
 
     public static String posisiawal = "Telkom University";
 
@@ -104,9 +97,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
         locSpinner = (Spinner) findViewById(R.id.Spinner);
-        mQueue = Volley.newRequestQueue(this);
-        locSpinner.setEnabled(false); // buat tidak bisa diubah
-//        tes
+        mQueue= Volley.newRequestQueue(this);
+
         lokasi.add("Telkom University");
         lokasi.add("Museum Asia Afrika");
         lokasi.add("Museum Geologi");
@@ -115,118 +107,79 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         lokasi.add("Monumen Perjuangan Rakyat Jawa Barat");
 
 
+
         db = FirebaseFirestore.getInstance();
         // Get document dari Collection Tempat
         db.collection("tempat").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
-                    GeoPoint telkom = null;
-
                     for (final QueryDocumentSnapshot document : task.getResult()) {
-                        String namaJalur = document.getString("jalur");
+                        String nama = document.getString("jalur");
+                        lokasifb.add(nama);
+                        datapoint.add(document.get("coordinat"));
 
-                        if (!namaJalur.equals(lokasi.get(0))) {
-                            String[] parts = namaJalur.split("-");
-                            String namaLokasiAwal = parts[0]; // 004
-                            String namaLokasiAkhir = parts[1]; // 034556
-
-                            ArrayList kumpulanCoordinatVirtual = (ArrayList) document.get("coordinat"); // mengambil coordinat dari index yang terpilih sebelumnya
-
-                            GeoPoint coordinatPertama = (GeoPoint) kumpulanCoordinatVirtual.get(0); // Ambil coordinat index 0, karna itu coordinat lokasi awal
-                            Point coorAwalPoint = Point.fromLngLat(coordinatPertama.getLongitude(), coordinatPertama.getLatitude());
-                            GeoPoint coordinatTerakhir = (GeoPoint) kumpulanCoordinatVirtual.get(kumpulanCoordinatVirtual.size() - 1); // Ambil coordinat index 0, karna itu coordinat lokasi awal
-                            Point coorTerakhirPoint = Point.fromLngLat(coordinatTerakhir.getLongitude(), coordinatTerakhir.getLatitude());
-
-                            City lokasiAwal = new City(coorAwalPoint, namaLokasiAwal); // Buat City pertama
-                            City lokasiAkhir = new City(coorTerakhirPoint, namaLokasiAkhir); // Buat City pertama
-                            cityAwal.add(lokasiAwal);
-                            cityAkhir.add(lokasiAkhir);
-                            listJalur.add(namaJalur);
-                            datapoint.add(document.get("coordinat"));
-                            bobots.add(document.getLong("jarak").intValue());
-
-
-                        }else{
-                            telkom = (GeoPoint) document.get("coordinat");
-                        }
                     }
 
-                    Log.d("JalurTes", "cityAwal : " + cityAwal.size());
-                    Log.d("JalurTes", "cityAkhir : " + cityAkhir.size());
-                    Log.d("JalurTes", "listJalur : " + listJalur.size());
-                    Log.d("JalurTes", "datapoint : " + datapoint.size());
-                    Log.d("JalurTes", "bobots : " + bobots.size());
+//                    ArrayList test = (ArrayList) datapoint.get(1);
+//                    for(int i=0; i<test.size(); i++){
+//                        Log.d("CekFirebase", String.valueOf(test.get(i)));
+//                    }
 
-                    Point telkomawal = Point.fromLngLat(telkom.getLongitude(), telkom.getLatitude());
+
+                    GeoPoint telkom = (GeoPoint) datapoint.get(0);
+                    Point telkomawal = Point.fromLngLat(telkom.getLongitude(),telkom.getLatitude());
                     points.add(telkomawal);
                     LatLng telkommarker = new LatLng(points.get(0).latitude(), points.get(0).longitude());
-                    destinationMarker = map.addMarker(new MarkerOptions().position(telkommarker)); // Buat marker di telkom
-                    locSpinner.setEnabled(true); // aktifkan kembali
+                    destinationMarker = map.addMarker(new MarkerOptions().position(telkommarker));
+
+                    dataadapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, lokasi);
+                    dataadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    locSpinner.setAdapter(dataadapter);
+                    Log.d("CekFirebase", "Set Spinner");
+
                 } else {
                     Log.e("CekFirebase", "Gagal");
                 }
             }
+
         });
 
-        dataadapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item, lokasi);
-        dataadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        locSpinner.setAdapter(dataadapter);
-        Log.d("CekFirebase", "Set Spinner");
+        final int[] nomor = new int[1];
 
         locSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                if (datapoint.size() > 0) {
-                    Log.d("YangDipilihSpinner", String.valueOf(position));
-                    int indexBobotTerkecil = -1;
-                    String namaLokasiAwal = "";
-                    for (int currentIndex = 0; currentIndex < listJalur.size(); currentIndex++) {
-                        // Pastikan bahwa nama dari lokasi awal dan akhir
-                        if (listJalur.get(currentIndex).contains(posisiawal) && listJalur.get(currentIndex).contains(lokasi.get(position))) {
-                            namaLokasiAwal = listJalur.get(currentIndex).substring(0, posisiawal.length());
-                            Log.d("Testt Sama", namaLokasiAwal);
-                            if (posisiawal.equals(namaLokasiAwal)) {
-                                if (indexBobotTerkecil == -1) {
-                                    indexBobotTerkecil = currentIndex; // Ambil index pertama, karna belum cek jalur lain
-                                } else if (bobots.get(currentIndex) < bobots.get(indexBobotTerkecil)) { // Jika index yang saat ini bobotnya lebih kecil, maka..
-                                    indexBobotTerkecil = currentIndex; // Jadikan index saat ini menjadi index dengan bobot terkecil
-                                }
-                            }
+
+                for(int i=0;i<lokasifb.size(); i++){
+                    if(lokasifb.get(i).contains(posisiawal) && lokasifb.get(i).contains(lokasi.get(position))){
+                        String potongan = lokasifb.get(i).substring(0,posisiawal.length());
+                        Log.d("Testt Sama",potongan);
+                        if(posisiawal.equals(potongan)){
+                            nomor[0] = i;
                         }
                     }
-
-                    ArrayList kumpulanCoordinatVirtual = (ArrayList) datapoint.get(indexBobotTerkecil); // mengambil coordinat dari index yang terpilih sebelumnya
-
-                    indexTerpilih = indexBobotTerkecil; // hiraukan
-
-//                    City lokasiAwal = new City(coorAwalPoint, namaLokasiAwal); // Buat City pertama
-//                    City lokasiAkhir = new City(coorTerakhirPoint, lokasi.get(position)); // Buat City pertama
-//
-//                    Jalur jalurTerpilih = new Jalur(lokasiAwal, lokasiAkhir, bobots.get(indexTerpilih));
-//                    jalurs.add(jalurTerpilih);
-                    points.clear();// mengkosongkan titik jalur yang terakhir untuk dipakai jalur yang selanjutnya
-
-                    for (int index = 0; index < kumpulanCoordinatVirtual.size(); index++) {
-                        Log.d("CekFirebase", String.valueOf(kumpulanCoordinatVirtual.get(index)));
-
-                        GeoPoint coordinateVirtual = (GeoPoint) kumpulanCoordinatVirtual.get(index); // Ambil geopoint pada suatu index
-                        Point coorVirtualPoint = Point.fromLngLat(coordinateVirtual.getLongitude(), coordinateVirtual.getLatitude()); // Convert Geopoint ke Point
-                        points.add(coorVirtualPoint); //coordinat yang telah di convert jadi point, dimasukkan ke dalam list point
-
-                        // Jika coordinat saat ini adalah coordinat yang terakhir
-                        if (index == (kumpulanCoordinatVirtual.size() - 1)) {
-                            LatLng telkommarker = new LatLng(coorVirtualPoint.latitude(), coorVirtualPoint.longitude()); // Convert Point jadi LatLng
-                            destinationMarker = map.addMarker(new MarkerOptions().position(telkommarker)); // Tampilkan marker dari titik terakhir
-                        }
-                    }
-
-                    getRoute();
-
-                    posisiawal = lokasi.get(position);
-                    startButton.setEnabled(true);
-                    startButton.setBackgroundResource(R.color.mapbox_blue);
                 }
+
+                points.clear();
+
+                ArrayList test = (ArrayList) datapoint.get(nomor[0]);
+                for(int i=0; i<test.size(); i++){
+                    Log.d("CekFirebase", String.valueOf(test.get(i)));
+                    GeoPoint telkom = (GeoPoint) test.get(i);
+                    Point telkomawal = Point.fromLngLat(telkom.getLongitude(),telkom.getLatitude());
+                    points.add(telkomawal);
+                    if(i==(test.size()-1)){
+                        LatLng telkommarker = new LatLng(telkomawal.latitude(), telkomawal.longitude());
+                        destinationMarker = map.addMarker(new MarkerOptions().position(telkommarker));
+                    }
+                }
+
+                getRoute();
+
+                posisiawal = lokasi.get(position);
+                startButton.setEnabled(true);
+                startButton.setBackgroundResource(R.color.mapbox_blue);
             }
 
             @Override
@@ -251,66 +204,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         });
-        tesHasil();
-    }
 
-    private void tesHasil() {
-        City city = new City(60, 200);
-        TourManager.addCity(city);
-        City city2 = new City(180, 200);
-        TourManager.addCity(city2);
-        City city3 = new City(80, 180);
-        TourManager.addCity(city3);
-        City city4 = new City(140, 180);
-        TourManager.addCity(city4);
-        City city5 = new City(20, 160);
-        TourManager.addCity(city5);
-        City city6 = new City(100, 160);
-        TourManager.addCity(city6);
-        City city7 = new City(200, 160);
-        TourManager.addCity(city7);
-        City city8 = new City(140, 140);
-        TourManager.addCity(city8);
-        City city9 = new City(40, 120);
-        TourManager.addCity(city9);
-        City city10 = new City(100, 120);
-        TourManager.addCity(city10);
-        City city11 = new City(180, 100);
-        TourManager.addCity(city11);
-        City city12 = new City(60, 80);
-        TourManager.addCity(city12);
-        City city13 = new City(120, 80);
-        TourManager.addCity(city13);
-        City city14 = new City(180, 60);
-        TourManager.addCity(city14);
-        City city15 = new City(20, 40);
-        TourManager.addCity(city15);
-        City city16 = new City(100, 40);
-        TourManager.addCity(city16);
-        City city17 = new City(200, 40);
-        TourManager.addCity(city17);
-        City city18 = new City(20, 20);
-        TourManager.addCity(city18);
-        City city19 = new City(60, 20);
-        TourManager.addCity(city19);
-        City city20 = new City(160, 20);
-        TourManager.addCity(city20);
 
-        // Initialize population
-        Population pop = new Population(50, true);
-        System.out.println("Initial distance: " + pop.getFittest().getDistance());
+		/* Let us create the following weighted graph
+		10
+		(0)------->(3)
+		|		 /|\
+		5 |		 |
+		|		 | 1
+		\|/		 |
+		(1)------->(2)
+		3		 */
 
-        // Evolve population for 100 generations
-        pop = GA.evolvePopulation(pop);
-        for (int i = 0; i < 90; i++) {
-            pop = GA.evolvePopulation(pop);
-        }
 
-        // Print final results
-        System.out.println("Finished");
-        System.out.println("Final distance: " + pop.getFittest().getDistance());
-        System.out.println("Solution:");
-        System.out.println(pop.getFittest());
+
     }
 
     @Override
@@ -366,30 +273,36 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapClick(@NonNull LatLng point) {
-
+//        if (destinationMarker != null){
+//            map.removeMarker(destinationMarker);
+//        }
+//        destinationMarker = lokasi.add(new MarkerOptions().position(new LatLng(poin;
+//        destinationMarker = map.addMarker(new MarkerOptions().position(point));
+//        destinationPosition = Point.fromLngLat(point.getLongitude(), point.getLatitude());
+//        originPosition = Point.fromLngLat(originLocation.getLongitude(), originLocation.getLatitude());
+//        if (currentPosition != null)
+//        getRoute(currentPosition, destinationPosition);
+//        else
+//        getRoute(originPosition, destinationPosition);
+//        currentPosition = destinationPosition;
+//        startButton.setEnabled(true);
+//        startButton.setBackgroundResource(R.color.mapboxBlue);
     }
 
     List<DirectionsRoute> routes = new ArrayList<>();
 
     private void getRoute() {
-//        int i = 0;
-//        ArrayList<Point> copyPoints = new ArrayList() {};
-//        ArrayList<Integer> removed = new ArrayList<>();
-//        for (Point a : points) {
-//            copyPoints.add(a);
-//        }
-//        for (Point a : copyPoints) {
-//            Log.d("PrintPoint", a.latitude() + " " + a.longitude());
-//            if (i != 0 && i != 5 && i != 8) {
-//                Log.d("PrintPoint", i + " removed");
-//                removed.add(i);
-//            }
-//            i++;
-//        }
-//        for (int index : removed){
-//            points.remove(points.indexOf(copyPoints.get(index)));
-//        }
 
+
+//        Point point1 = Point.fromLngLat(107.609273,-6.921405 );
+//        Point point2 = Point.fromLngLat(107.604115, -6.920795 );
+//        Point point3 = Point.fromLngLat(107.603081,-6.937908 );
+//        List<Point> testpoint = new ArrayList<>();
+//        testpoint.add(point1);
+//        testpoint.add(point2);
+//        testpoint.add(point3);
+//
+//        Log.d("Point apa", points.toString());
         MapboxMapMatching.builder()
                 .accessToken(Mapbox.getAccessToken())
                 .coordinates(points)
@@ -418,7 +331,38 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     }
                 });
-
+//
+//        NavigationRoute.Builder builder = NavigationRoute.builder();
+//
+//        builder.accessToken(Mapbox.getAccessToken())
+//                .origin(origin)
+//                .destination(destination)
+//                .build()
+//                .getRoute(new Callback<DirectionsResponse>() {
+//                    @Override
+//                    public void onResponse(Call<DirectionsResponse> call, Response<DirectionsResponse> response) {
+//                        if (response.body() == null) {
+//                            Log.e(TAG, "No routes found, check right user and acces token");
+//                            return;
+//                        } else if (response.body().routes().size() == 0) {
+//                            Log.e(TAG, "No routes found");
+//                            return;
+//                        }
+//
+////                        DirectionsRoute currentRoute = response.body().routes().get(0);
+//
+//                        if (navigationMapRoute == null) {
+//                            navigationMapRoute = new NavigationMapRoute(null, mapView, map);
+//                        }
+//                        routes.add(response.body().routes().get(0));
+//                        navigationMapRoute.addRoutes(routes);
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Call<DirectionsResponse> call, Throwable t) {
+//                        Log.e(TAG, "Error:" + t.getMessage());
+//                    }
+//                });
     }
 
 
@@ -513,4 +457,3 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 }
-
