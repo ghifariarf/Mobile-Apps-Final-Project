@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         locSpinner = (Spinner) findViewById(R.id.Spinner);
         mQueue = Volley.newRequestQueue(this);
         locSpinner.setEnabled(false); // buat tidak bisa diubah
+//        tes
         lokasi.add("Telkom University");
         lokasi.add("Museum Asia Afrika");
         lokasi.add("Museum Geologi");
