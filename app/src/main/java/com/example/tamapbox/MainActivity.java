@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final String LAYER_ID = "LAYER_ID";
     private Spinner locSpinner;
     private List<String> lokasi = new ArrayList<>();
+    private List<String> nodes = new ArrayList<>();
     private List<String> lokasifb = new ArrayList<>();
     private List<Point> points = new ArrayList<>();
     private List<String> listJalur = new ArrayList<>();
@@ -102,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
         locSpinner = (Spinner) findViewById(R.id.Spinner);
-        mQueue= Volley.newRequestQueue(this);
+        mQueue = Volley.newRequestQueue(this);
 
         lokasi.add("Telkom University"); // 0
         lokasi.add("Museum Asia Afrika"); // 1
@@ -114,72 +115,46 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         int i = lokasi.indexOf("Museum Sri Baduga");
 
         db = FirebaseFirestore.getInstance();
-        // Get document dari Collection Tempat
-        db.collection("tempat").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        // Get document dari Collection Node
+        db.collection("node").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    GeoPoint telkom = null;
+            public void onComplete(@NonNull Task<QuerySnapshot> taskNode) {
+                for (final QueryDocumentSnapshot document : taskNode.getResult()) {
+                    // Masukkan semua node ke Array List
+                    nodes.add(document.getId());
+                }
 
-//                    int index = 0;
+                db.collection("edge").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> taskNode) {
 
-                    for (final QueryDocumentSnapshot document : task.getResult()) {
-//                        Log.d("IndexSekarang", String.valueOf(index));
 
-                        String namaJalur = document.getString("jalur");
+                        if (taskNode.isSuccessful()) {
 
-                        if (!namaJalur.equals(lokasi.get(0))) {
-                            //Cara Split 2 string
-                            String[] parts = namaJalur.split("-");
-                            String namaLokasiAwal = parts[0]; // 004
-                            String namaLokasiAkhir = parts[1]; // 034556
+                            for (final QueryDocumentSnapshot document : taskNode.getResult()) {
 
-                            ArrayList kumpulanCoordinatVirtual = (ArrayList) document.get("coordinat"); // mengambil coordinat dari index yang terpilih sebelumnya
+                                cityAwal.add(document.getString("id_node_awal"));
+                                cityAkhir.add(document.getString("id_node_akhir"));
+                                bobots.add(document.getLong("jarak").intValue() * document.getLong("waktu").intValue());
+                            }
 
-                            GeoPoint coordinatPertama = (GeoPoint) kumpulanCoordinatVirtual.get(0); // Ambil coordinat index 0, karna itu coordinat lokasi awal
-                            Point coorAwalPoint = Point.fromLngLat(coordinatPertama.getLongitude(), coordinatPertama.getLatitude());
-                            GeoPoint coordinatTerakhir = (GeoPoint) kumpulanCoordinatVirtual.get(kumpulanCoordinatVirtual.size() - 1); // Ambil coordinat index 0, karna itu coordinat lokasi awal
-                            Point coorTerakhirPoint = Point.fromLngLat(coordinatTerakhir.getLongitude(), coordinatTerakhir.getLatitude());
-                            Log.d("NamaJalur", namaJalur+ " " + document.getLong("jarak").intValue());
+                            int[][] weights = new int[cityAwal.size()][3];
 
-                            //Pindahin database ke array list
-                            cityAwal.add(namaLokasiAwal);
-                            cityAkhir.add(namaLokasiAkhir);
-                            listJalur.add(namaJalur);
-                            datapoint.add(document.get("coordinat"));
-                            bobots.add(document.getLong("jarak").intValue());
+                            for (int index = 0; index < cityAkhir.size(); index++) {
+                                weights[index][0] = nodes.indexOf(cityAwal.get(index)); // Mengambil index dari cityAwal
+                                weights[index][1] = nodes.indexOf(cityAkhir.get(index)); // Mengambil index dari cityAkhir
+                                weights[index][2] = bobots.get(index);
+                            }
 
+                            int numVertices = nodes.size();
+
+                            floydWarshall(weights, numVertices);
 
                         } else {
-                            telkom = (GeoPoint) document.get("coordinat");
+                            Log.e("CekFirebase", "Gagal");
                         }
-
-//                        index++;
                     }
-
-//                    Log.d("JalurTes", "cityAwal : " + cityAwal.size());
-//                    Log.d("JalurTes", "cityAkhir : " + cityAkhir.size());
-//                    Log.d("JalurTes", "listJalur : " + listJalur.size());
-//                    Log.d("JalurTes", "datapoint : " + datapoint.size());
-//                    Log.d("JalurTes", "bobots : " + bobots.size());
-
-                    int[][] weights = new int[cityAwal.size()][cityAwal.size()];
-
-                    for (int index = 0; index < cityAwal.size(); index++) {
-                        weights[index][0] = lokasi.indexOf(cityAwal.get(index)); // Mengambil index dari cityAwal
-                        weights[index][1] = lokasi.indexOf(cityAkhir.get(index)); // Mengambil index dari cityAkhir
-                        weights[index][2] = bobots.get(index);
-                    }
-                    int numVertices = lokasi.size();
-
-//                    int[][] weights = {{1, 3, -2}, {2, 1, 4}, {2, 3, 3}, {3, 4, 2}, {4, 2, -1}};
-//                    int numVertices = 4;
-
-                    floydWarshall(weights, numVertices);
-
-                } else {
-                    Log.e("CekFirebase", "Gagal");
-                }
+                });
             }
         });
 
@@ -226,11 +201,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
 
-                for(int i=0;i<lokasifb.size(); i++){
-                    if(lokasifb.get(i).contains(posisiawal) && lokasifb.get(i).contains(lokasi.get(position))){
-                        String potongan = lokasifb.get(i).substring(0,posisiawal.length());
-                        Log.d("Testt Sama",potongan);
-                        if(posisiawal.equals(potongan)){
+                for (int i = 0; i < lokasifb.size(); i++) {
+                    if (lokasifb.get(i).contains(posisiawal) && lokasifb.get(i).contains(lokasi.get(position))) {
+                        String potongan = lokasifb.get(i).substring(0, posisiawal.length());
+                        Log.d("Testt Sama", potongan);
+                        if (posisiawal.equals(potongan)) {
                             nomor[0] = i;
                         }
                     }
@@ -239,12 +214,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 points.clear();
 
                 ArrayList test = (ArrayList) datapoint.get(nomor[0]);
-                for(int i=0; i<test.size(); i++){
+                for (int i = 0; i < test.size(); i++) {
                     Log.d("CekFirebase", String.valueOf(test.get(i)));
                     GeoPoint telkom = (GeoPoint) test.get(i);
-                    Point telkomawal = Point.fromLngLat(telkom.getLongitude(),telkom.getLatitude());
+                    Point telkomawal = Point.fromLngLat(telkom.getLongitude(), telkom.getLatitude());
                     points.add(telkomawal);
-                    if(i==(test.size()-1)){
+                    if (i == (test.size() - 1)) {
                         LatLng telkommarker = new LatLng(telkomawal.latitude(), telkomawal.longitude());
                         destinationMarker = map.addMarker(new MarkerOptions().position(telkommarker));
                     }
@@ -281,19 +256,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
 
-
-
-
     }
 
-    static void floydWarshall(int[][] weights, int numVertices) {
+     void floydWarshall(int[][] weights, int numVertices) {
 
         double[][] dist = new double[numVertices][numVertices];
         for (double[] row : dist)
             Arrays.fill(row, Double.POSITIVE_INFINITY);
 
-        for (int[] w : weights)
+        for (int[] w : weights) {
+            Log.d("NamaJalur", "Panjangnya: " + w.length);
+            for (int isi : w) {
+                Log.d("NamaJalur", String.valueOf(isi));
+            }
+            Log.d("NamaJalur", "--------------------");
             dist[w[0]][w[1]] = w[2];
+        }
 
         int[][] next = new int[numVertices][numVertices];
         for (int i = 0; i < next.length; i++) {
@@ -313,17 +291,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         printResult(dist, next);
     }
 
-    static void printResult(double[][] dist, int[][] next) {
+     void printResult(double[][] dist, int[][] next) {
         System.out.println("pair     dist    path");
         for (int i = 0; i < next.length; i++) {
             for (int j = 0; j < next.length; j++) {
                 if (i != j) {
                     int u = i;
                     int v = j;
-                    String path = String.format("%d -> %d    %2d     %s", u, v, (int) dist[i][j], u);
+                    String path = String.format("%s -> %s    %2d     %s", nodes.get(u), nodes.get(v), (int) dist[i][j], nodes.get(u));
                     do {
                         u = next[u][v];
-                        path += " -> " + u;
+                        path += " -> " + nodes.get(u);
                     } while (u != v);
                     System.out.println(path);
                 }
