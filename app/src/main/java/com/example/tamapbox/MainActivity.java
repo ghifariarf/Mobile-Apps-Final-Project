@@ -116,22 +116,43 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         db = FirebaseFirestore.getInstance();
         // Get document dari Collection Node
-        db.collection("node").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        db.collection("test_node").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> taskNode) {
                 for (final QueryDocumentSnapshot document : taskNode.getResult()) {
                     // Masukkan semua node ke Array List
                     nodes.add(document.getId());
+
+
                 }
 
-                db.collection("edge").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                db.collection("test_edge").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> taskNode) {
 
 
                         if (taskNode.isSuccessful()) {
 
+
+
                             for (final QueryDocumentSnapshot document : taskNode.getResult()) {
+
+
+                                ArrayList<Double> kemacetan = new ArrayList<>();
+                                for(int i = 0; i < 24; i++)
+                                    kemacetan.add(0.5);
+
+                                db = FirebaseFirestore.getInstance();
+
+                                db.collection("test_edge").document(document.getId()).update(
+                                        "senin", kemacetan,
+                                        "selasa", kemacetan,
+                                        "rabu", kemacetan,
+                                        "kamis", kemacetan,
+                                        "jumat", kemacetan,
+                                        "sabtu", kemacetan,
+                                        "minggu", kemacetan
+                                );
 
                                 cityAwal.add(document.getString("id_node_awal"));
                                 cityAkhir.add(document.getString("id_node_akhir"));
