@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                 cityAwal.add(document.getString("id_node_awal"));
                                 cityAkhir.add(document.getString("id_node_akhir"));
-                                bobots.add(document.getLong("jarak").intValue() * document.getLong("waktu").intValue());
+                                bobots.add(document.getLong("jarak").intValue() );
                             }
 
                             int[][] weights = new int[cityAwal.size()][3];
@@ -258,6 +258,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    String[] tempatsingkatan = {"aa", "g", "sb","s","m","t"};
+    ArrayList <String> dataawal = new ArrayList<>();
+    ArrayList <String> dataakhir = new ArrayList<>();
+    ArrayList <Integer> bobot = new ArrayList<>();
+    ArrayList <String> pathfinal = new ArrayList<>();
+
+
      void floydWarshall(int[][] weights, int numVertices) {
 
         double[][] dist = new double[numVertices][numVertices];
@@ -286,10 +293,58 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     if (dist[i][k] + dist[k][j] < dist[i][j]) {
                         dist[i][j] = dist[i][k] + dist[k][j];
                         next[i][j] = next[i][k];
+
                     }
 
         printResult(dist, next);
+        String awal = String.valueOf('t');
+        ArrayList <String> tempdata = new ArrayList<>();
+        ArrayList <String> finaldata = new ArrayList<>();
+        ArrayList <String> awaltemp = new ArrayList<>();
+        ArrayList <String> akhirtemp = new ArrayList<>();
+        ArrayList <Integer> bobottemp = new ArrayList<>();
+
+        tempdata.add("Testdoang");
+        Boolean test = Arrays.asList(tempdata).contains(awal);
+
+        while(!tempdata.contains(awal)) {
+            tempdata.add(awal);
+            if(finaldata.size() == 5){
+
+                break;
+            }
+            for (int i = 0; i < dataakhir.size(); i++) {
+                if (awal.equals(dataawal.get(i))) {
+                    awaltemp.add(dataawal.get(i));
+                    akhirtemp.add(dataakhir.get(i));
+                    bobottemp.add(bobot.get(i));
+                }
+                if (akhirtemp.size() == 5) {
+                   int minimum = 99999999;
+                    int position = 0;
+                    for (int j = 0; j < akhirtemp.size(); j++) {
+                        if ((bobottemp.get(j) < minimum) && (!tempdata.contains(akhirtemp.get(j)))) {
+                            minimum = bobottemp.get(j);
+                            awal = akhirtemp.get(j);
+                        }
+                    }
+
+                    position = bobottemp.indexOf(minimum);
+                    if(position >= 0){
+                        String path = awaltemp.get(position) + ";" + akhirtemp.get(position) + ";" + bobottemp.get(position);
+                        Log.d("Akhir", path);
+                        finaldata.add(path);
+                    }
+
+                    awaltemp.clear();
+                    akhirtemp.clear();
+                    bobottemp.clear();
+                }
+            }
+        }
     }
+
+
 
      void printResult(double[][] dist, int[][] next) {
         System.out.println("pair     dist    path");
@@ -298,12 +353,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (i != j) {
                     int u = i;
                     int v = j;
-                    String path = String.format("%s -> %s    %2d     %s", nodes.get(u), nodes.get(v), (int) dist[i][j], nodes.get(u));
+                    String path = String.format("%s -> %s %2d %s", nodes.get(u), nodes.get(v), (int) dist[i][j], nodes.get(u));
+
+                    boolean awal = Arrays.asList(tempatsingkatan).contains(nodes.get(u));
+                    boolean akhir = Arrays.asList(tempatsingkatan).contains(nodes.get(v));
+
+                    if(awal && akhir){
+                        dataawal.add(nodes.get(u));
+                        dataakhir.add(nodes.get(v));
+                        bobot.add((int) dist[i][j]);
+                        pathfinal.add(path);
+
+                        System.out.println(path);
+                    }
+
                     do {
                         u = next[u][v];
                         path += " -> " + nodes.get(u);
                     } while (u != v);
-                    System.out.println(path);
+
+                    if(awal && akhir){
+                        pathfinal.add(path);
+                    }
                 }
             }
         }
