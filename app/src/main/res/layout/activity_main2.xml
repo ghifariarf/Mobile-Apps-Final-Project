@@ -1,6 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/txttextaja1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Silahkan Pilih Lokasi Wisata yang di Inginkan"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.023"
+        tools:layout_editor_absoluteX="16dp" />
+
+    <CheckBox
+        android:id="@+id/MuseumAsiaAfrika"
+        android:layout_width="230dp"
+        android:layout_height="44dp"
+        android:text="Museum Asia Afrika"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.187"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.199" />
+
+    <CheckBox
+        android:id="@+id/MuseumGeologi"
+        android:layout_width="230dp"
+        android:layout_height="44dp"
+        android:text="Museum Geologi"
+        app:layout_constraintBottom_toBottomOf="@+id/btncarirute"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.187"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.331" />
+
+    <CheckBox
+        android:id="@+id/MuseumSriBaduga"
+        android:layout_width="230dp"
+        android:layout_height="44dp"
+        android:text="Museum Sri Baduga"
+        app:layout_constraintBottom_toBottomOf="@+id/btncarirute"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.189"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/txttextaja1"
+        app:layout_constraintVertical_bias="0.56" />
+
+    <CheckBox
+        android:id="@+id/MonumenPerjuanganRakyatJawaBarat"
+        android:layout_width="230dp"
+        android:layout_height="44dp"
+        android:text="Monumen Perjuangan Rakyat Jawa Barat"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.187"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.647" />
+
+    <CheckBox
+        android:id="@+id/MuseumSiliwangi"
+        android:layout_width="230dp"
+        android:layout_height="44dp"
+        android:text="MuseumSiliwangi"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.187"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.432" />
+
+    <Button
+        android:id="@+id/btncarirute"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#D81B60"
+        android:text="Mencari Rute"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.948"
+        tools:layout_editor_absoluteX="16dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>

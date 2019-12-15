@@ -91,6 +91,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public static String posisiawal = "Telkom University";
 
 
+    Boolean asiaAf;
+    Boolean geo;
+    Boolean siliwa;
+    Boolean monumen;
+    Boolean sri;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -99,11 +105,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
         mapView = findViewById(R.id.mapView);
         startButton = findViewById(R.id.startButton);
-        locSpinner = findViewById(R.id.Spinner);
+//        locSpinner = findViewById(R.id.Spinner);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
-        locSpinner = (Spinner) findViewById(R.id.Spinner);
+//        locSpinner = (Spinner) findViewById(R.id.Spinner);
         mQueue = Volley.newRequestQueue(this);
+
+        asiaAf = getIntent().getExtras().getBoolean("asiaAf");
+        geo = getIntent().getExtras().getBoolean("geo");
+        siliwa = getIntent().getExtras().getBoolean("siliwa");
+        sri = getIntent().getExtras().getBoolean("sri");
+        monumen = getIntent().getExtras().getBoolean("monumen");
 
         lokasi.add("Telkom University"); // 0
         lokasi.add("Museum Asia Afrika"); // 1
@@ -147,6 +159,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             }
 
                             int numVertices = nodes.size();
+                            GeoPoint telkom = (GeoPoint) datapoint.get(0);
+
+                    Point telkomawal = Point.fromLngLat(telkom.getLongitude(),telkom.getLatitude());
+                    points.add(telkomawal);
+                    LatLng telkommarker = new LatLng(points.get(0).latitude(), points.get(0).longitude());
+                    destinationMarker = map.addMarker(new MarkerOptions().position(telkommarker));
 
                             floydWarshall(weights, numVertices);
 
