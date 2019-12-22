@@ -329,12 +329,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                     }
 
+<<<<<<< Updated upstream
                     position = bobottemp.indexOf(minimum);
                     if(position >= 0){
                         String path = awaltemp.get(position) + ";" + akhirtemp.get(position) + ";" + bobottemp.get(position);
                         Log.d("Akhir", path);
                         finaldata.add(path);
                     }
+=======
+
+
+
+>>>>>>> Stashed changes
 
                     awaltemp.clear();
                     akhirtemp.clear();
