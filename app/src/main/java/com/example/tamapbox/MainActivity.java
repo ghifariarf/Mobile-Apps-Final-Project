@@ -341,9 +341,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                     }
 
-                    // PR : di if sampe index ke 5
-                    // PR : awalnya m, akhirnya t . cari mana yang akhir, misal M. lalu sebagai awal dan cari akhir nya itu T
-
+                    
 
 
 
