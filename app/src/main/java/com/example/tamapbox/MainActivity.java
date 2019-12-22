@@ -48,6 +48,8 @@ import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import retrofit2.Call;
@@ -88,6 +90,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private FirebaseFirestore db;
     private RequestQueue mQueue;
 
+    static ArrayList <Integer> arrtot = new ArrayList<>();
+    static ArrayList <data> rutelist = new ArrayList<>();
     public static String posisiawal = "Telkom University";
 
 
@@ -116,17 +120,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         db = FirebaseFirestore.getInstance();
         // Get document dari Collection Node
-        db.collection("test_node").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        db.collection("node").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> taskNode) {
                 for (final QueryDocumentSnapshot document : taskNode.getResult()) {
                     // Masukkan semua node ke Array List
                     nodes.add(document.getId());
 
-
                 }
 
-                db.collection("test_edge").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                db.collection("edge").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> taskNode) {
 
@@ -138,21 +141,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             for (final QueryDocumentSnapshot document : taskNode.getResult()) {
 
 
-                                ArrayList<Double> kemacetan = new ArrayList<>();
-                                for(int i = 0; i < 24; i++)
-                                    kemacetan.add(0.5);
-
-                                db = FirebaseFirestore.getInstance();
-
-                                db.collection("test_edge").document(document.getId()).update(
-                                        "senin", kemacetan,
-                                        "selasa", kemacetan,
-                                        "rabu", kemacetan,
-                                        "kamis", kemacetan,
-                                        "jumat", kemacetan,
-                                        "sabtu", kemacetan,
-                                        "minggu", kemacetan
-                                );
 
                                 cityAwal.add(document.getString("id_node_awal"));
                                 cityAkhir.add(document.getString("id_node_akhir"));
@@ -170,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             int numVertices = nodes.size();
 
                             floydWarshall(weights, numVertices);
+
 
                         } else {
                             Log.e("CekFirebase", "Gagal");
@@ -277,6 +266,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
 
+
     }
 
     String[] tempatsingkatan = {"aa", "g", "sb","s","m","t"};
@@ -318,7 +308,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
 
         printResult(dist, next);
-        String awal = String.valueOf('t');
+
+        String awal = String.valueOf('t'); //titik awal selalu di telkom
         ArrayList <String> tempdata = new ArrayList<>();
         ArrayList <String> finaldata = new ArrayList<>();
         ArrayList <String> awaltemp = new ArrayList<>();
@@ -350,16 +341,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                     }
 
-                    position = bobottemp.indexOf(minimum);
-                    if(position >= 0){
-                        String path = awaltemp.get(position) + ";" + akhirtemp.get(position) + ";" + bobottemp.get(position);
-                        Log.d("Akhir", path);
-                        finaldata.add(path);
-                    }
+                    // PR : di if sampe index ke 5
+                    // PR : awalnya m, akhirnya t . cari mana yang akhir, misal M. lalu sebagai awal dan cari akhir nya itu T
 
-                    awaltemp.clear();
-                    akhirtemp.clear();
-                    bobottemp.clear();
+
+
+
+//                    position = bobottemp.indexOf(minimum);
+//                    if(position >= 0){
+//                        String path = awaltemp.get(position) + ";" + akhirtemp.get(position) + ";" + bobottemp.get(position);
+//                        Log.d("Akhir", path);
+//                        finaldata.add(path);
+//                    }
+//
+//                    awaltemp.clear();
+//                    akhirtemp.clear();
+//                    bobottemp.clear();
                 }
             }
         }
@@ -368,6 +365,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
      void printResult(double[][] dist, int[][] next) {
+         String rutemin = "";
         System.out.println("pair     dist    path");
         for (int i = 0; i < next.length; i++) {
             for (int j = 0; j < next.length; j++) {
@@ -399,8 +397,102 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         }
+        permute(dataawal,dataakhir,bobot,java.util.Arrays.asList(0,1,2,3,4,5), 0);
+        for (int u = 0;u<rutelist.size();u++){
+            if(rutelist.get(u).getBobot()==Collections.min(arrtot)){
+                rutemin = rutelist.get(u).getRute();
+            }
+        }
+         System.out.println("Solusi Rute Optimal : ");
+         System.out.println(rutemin +" "+ Collections.min(arrtot));
     }
 
+    static void permute( ArrayList <String> dataawal,ArrayList <String> dataakhir,ArrayList <Integer> bobot,java.util.List<Integer> arr, int k){
+        List<int[]> listJalur = new ArrayList<int[]>();
+
+        for(int i = k; i < arr.size(); i++){
+            java.util.Collections.swap(arr, i, k);
+            permute(dataawal,dataakhir,bobot,arr, k+1);
+            java.util.Collections.swap(arr, k, i);
+        }
+        if (k == arr.size() -1){
+            int[] myIntArray = new int[arr.size()];
+            for(int i = 0; i < arr.size(); i++){
+                myIntArray[i] = arr.get(i);
+            }
+            listJalur.add(myIntArray);
+            int total = 0;
+            int totmin = 0;
+            String rute = "";
+            ArrayList <String> temploc = new ArrayList<>();
+            ArrayList <Integer> cek = new ArrayList<>();
+
+
+
+
+            for(int i = 0; i < listJalur.size(); i++){
+                int[] temp = listJalur.get(i);
+                if(temp[0] == 0){
+                    for(int j = 0; j <temp.length;  j++){
+                        if(temp[j] == 0 ){
+                            System.out.print("t -> ");
+                            temploc.add("t");
+                            rute += "t -> ";
+                        }else if(temp[j]==1){
+                            System.out.print("aa -> ");
+                            temploc.add("aa");
+                            rute += "aa -> ";
+                        }else if(temp[j]==2){
+                            System.out.print("sb -> ");
+                            temploc.add("sb");
+                            rute += "ab -> ";
+                        }else if(temp[j]==3){
+                            System.out.print("s -> ");
+                            temploc.add("s");
+                            rute += "s -> ";
+                        }else if(temp[j]==4){
+                            System.out.print("g -> ");
+                            temploc.add("g");
+                            rute += "g -> ";
+                        }else if(temp[j]==5){
+                            System.out.print("m -> ");
+                            temploc.add("m");
+                            rute += "m -> ";
+                        }
+                        if(temp[j]==5){
+                            temploc.add("t");
+                            rute += "t =";
+                        }
+
+
+                    }
+
+                    for (int f=0;f<temploc.size()-1;f++){
+
+                        for (int t=0;t<=29;t++){
+
+                            if(dataawal.get(t).equals(temploc.get(f)) && dataakhir.get(t).equals(temploc.get(f+1))){
+                                total = total+bobot.get(t);
+                                cek.add(bobot.get(t));
+                            }
+                        }
+                    }
+                    System.out.print("t = "+ total);
+                    System.out.println("");
+                    arrtot.add(total);
+                    rutelist.add(new data(rute,total));
+                    total=0;
+                    rute = "";
+                    for (int r=0;r<cek.size();r++){
+                        System.out.print(cek.get(r)+"");
+                        System.out.println("");
+                    }
+                    cek.clear();
+                    temploc.clear();
+                }
+            }
+        }
+    }
 
     @Override
     public void onMapReady(MapboxMap mapboxMap) {
