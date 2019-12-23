@@ -341,11 +341,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             awal = akhirtemp.get(j);
                         }
                     }
-
-
-
-
-
 //                    position = bobottemp.indexOf(minimum);
 //                    if(position >= 0){
 //                        String path = awaltemp.get(position) + ";" + akhirtemp.get(position) + ";" + bobottemp.get(position);
@@ -365,13 +360,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
      void printResult(double[][] dist, int[][] next) {
         String rutemin = "";
+        String rt= "";
+         ArrayList <String> tempath = new ArrayList<>();
+
         System.out.println("pair     dist    path");
+
         for (int i = 0; i < next.length; i++) {
             for (int j = 0; j < next.length; j++) {
                 if (i != j) {
                     int u = i;
                     int v = j;
-                    String path = String.format("%s -> %s %2d %s", nodes.get(u), nodes.get(v), (int) dist[i][j], nodes.get(u));
+                    String path = String.format("%s > %s %2d %s", nodes.get(u), nodes.get(v), (int) dist[i][j], nodes.get(u));
 
 
                     boolean awal = Arrays.asList(tempatsingkatan).contains(nodes.get(u));
@@ -381,7 +380,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         dataawal.add(nodes.get(u));
                         dataakhir.add(nodes.get(v));
                         bobot.add((int) dist[i][j]);
-                        pathfinal.add(path);
 
 //                        Log.d("NamaJalur", "--------------------");
 //                        System.out.println(path);
@@ -390,16 +388,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     do {
                         u = next[u][v];
-                        path += " -> " + nodes.get(u);
+                        path += " > " + nodes.get(u);
+                        rt = " > " + nodes.get(u);
                     } while (u != v);
+                    tempath.add(rt);
                     System.out.println(path);
-
+                    rt = "";
                     if(awal && akhir){
                         pathfinal.add(path);
                     }
                 }
             }
         }
+
         permute(dataawal,dataakhir,bobot,java.util.Arrays.asList(0,1,2,3,4,5), 0);
         for (int u = 0;u<rutelist.size();u++){
             if(rutelist.get(u).getBobot()==Collections.min(arrtot)){
@@ -408,6 +409,58 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
          System.out.println("Solusi Rute Optimal : ");
          System.out.println(rutemin +" "+ Collections.min(arrtot));
+
+         String rutemincoro = rutemin.substring(0, rutemin.length() - 1);
+         String[] coro = rutemincoro.split(">");
+         String[] tempcoro;
+         String[] awaltempcoro;
+         String finaltext;
+         ArrayList<String> finalcoro = new ArrayList<>();
+         int z = 0;
+         for(int i=1; i<coro.length; i++){
+             for(int j=0; j<pathfinal.size(); j++){
+                 tempcoro = pathfinal.get(j).split(">");
+                 awaltempcoro = tempcoro[1].trim().split(" ");
+                 if(tempcoro[0].trim().equals(coro[i-1].trim()) && awaltempcoro[0].trim().equals(coro[i].trim())){
+                     for(int k=0; k<pathfinal.get(j).length(); k++){
+                         if(Character.isDigit(pathfinal.get(j).charAt(k))){
+                             z = k;
+                             while (Character.isDigit(pathfinal.get(j).charAt(z))){
+                                 z++;
+                             }
+                             break;
+                         }
+                     }
+
+                     finaltext = pathfinal.get(j).substring(z);
+                     finalcoro.add(finaltext);
+                     System.out.println(pathfinal.get(j));
+                     System.out.println(finaltext);
+                 }
+             }
+         }
+
+         String[] temptext;
+         String jalancoro = "";
+         for(int c=0; c<finalcoro.size(); c++){
+             temptext = finalcoro.get(c).split(">");
+             if(c == 0){
+                 for(int d=0; d<temptext.length; d++){
+                     if(d == temptext.length-1){
+                         jalancoro += temptext[d].trim();
+                     }else {
+                         jalancoro += temptext[d].trim() + " > ";
+                     }
+                 }
+             }else{
+                 for(int d=1; d<temptext.length; d++){
+                     jalancoro += " > " + temptext[d].trim();
+                 }
+             }
+         }
+
+         System.out.println("Solusi TSP : ");
+         System.out.println(jalancoro);
     }
 
     static void permute( ArrayList <String> dataawal,ArrayList <String> dataakhir,ArrayList <Integer> bobot,java.util.List<Integer> arr, int k){
@@ -438,29 +491,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if(temp[0] == 0){
                     for(int j = 0; j <temp.length;  j++){
                         if(temp[j] == 0 ){
-                            System.out.print("t -> ");
+                            System.out.print("t > ");
                             temploc.add("t");
-                            rute += "t -> ";
+                            rute += "t > ";
                         }else if(temp[j]==1){
-                            System.out.print("aa -> ");
+                            System.out.print("aa > ");
                             temploc.add("aa");
-                            rute += "aa -> ";
+                            rute += "aa > ";
                         }else if(temp[j]==2){
-                            System.out.print("sb -> ");
+                            System.out.print("sb > ");
                             temploc.add("sb");
-                            rute += "sb -> ";
+                            rute += "sb > ";
                         }else if(temp[j]==3){
-                            System.out.print("s -> ");
+                            System.out.print("s > ");
                             temploc.add("s");
-                            rute += "s -> ";
+                            rute += "s > ";
                         }else if(temp[j]==4){
-                            System.out.print("g -> ");
+                            System.out.print("g > ");
                             temploc.add("g");
-                            rute += "g -> ";
+                            rute += "g > ";
                         }else if(temp[j]==5){
-                            System.out.print("m -> ");
+                            System.out.print("m > ");
                             temploc.add("m");
-                            rute += "m -> ";
+                            rute += "m > ";
                         }
                         if(temp[j]==5){
                             temploc.add("t");
