@@ -22,21 +22,6 @@
         mapbox:mapbox_cameraZoom="15"
         mapbox:mapbox_styleUrl="mapbox://styles/mapbox/streets-v10">
 
-        <Spinner
-            android:id="@+id/Spinner"
-            android:layout_width="match_parent"
-            android:layout_height="36dp"
-            android:layout_marginStart="0dp"
-            android:layout_marginLeft="0dp"
-            android:layout_marginTop="0dp"
-            android:layout_marginEnd="0dp"
-            android:layout_marginRight="0dp"
-            android:layout_marginBottom="0dp"
-            android:background="#ffffff"
-            android:gravity="bottom"
-            android:textAlignment="center"
-            android:text="Silahkan Cari Lokasi Anda Saat ini" />
-
         <Button
             android:id="@+id/startButton"
             android:layout_width="411dp"
